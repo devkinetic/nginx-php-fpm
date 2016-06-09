@@ -8,6 +8,10 @@ RUN ln -sf /bin/true /sbin/initctl
 # Let the conatiner know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
 
+# Create required directories
+RUN mkdir -p /etc/nginx
+RUN mkdir -p /var/run/php5-fpm
+
 # Update base image
 # Add sources for latest nginx
 # Install software requirements
@@ -46,6 +50,15 @@ sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" /etc/php5/fpm/
 sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" /etc/php5/fpm/pool.d/www.conf && \
 sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" /etc/php5/fpm/pool.d/www.conf
 
+# Setup Xdebug
+RUN touch /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "zend_extension = xdebug.so" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.remote_enable = 1" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.renite_enable = 1" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.max_nesting_level = 1000" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.profiler_enable_trigger = 1" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.profiler_output_dir = \"/var/log\"" >> /etc/php5/fpm/conf.d/40-custom.ini
+
 # fix ownership of sock file for php-fpm
 RUN sed -i -e "s/;listen.mode = 0660/listen.mode = 0750/g" /etc/php5/fpm/pool.d/www.conf && \
 find /etc/php5/cli/conf.d/ -name "*.ini" -exec sed -i -re 's/^(\s*)#(.*)/\1;\2/g' {} \;
@@ -75,6 +88,10 @@ RUN chmod 755 /start.sh
 # Setup Volume
 VOLUME ["/usr/share/nginx/html"]
 
+# Permissions for PHP scripts
+RUN usermod -u 1000 www-data
+RUN usermod -G staff www-data
+
 # add test PHP file
 ADD src/index.php /usr/share/nginx/html/index.php
 RUN chown -Rf www-data.www-data /usr/share/nginx/html/
@@ -82,5 +99,6 @@ RUN chown -Rf www-data.www-data /usr/share/nginx/html/
 # Expose Ports
 EXPOSE 443
 EXPOSE 80
+EXPOSE 9000
 
 CMD ["/bin/bash", "/start.sh"]
