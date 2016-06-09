@@ -58,6 +58,9 @@ RUN echo "xdebug.renite_enable = 1" >> /etc/php5/fpm/conf.d/40-custom.ini
 RUN echo "xdebug.max_nesting_level = 1000" >> /etc/php5/fpm/conf.d/40-custom.ini
 RUN echo "xdebug.profiler_enable_trigger = 1" >> /etc/php5/fpm/conf.d/40-custom.ini
 RUN echo "xdebug.profiler_output_dir = \"/var/log\"" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.remote_connect_back=1" >> /etc/php5/fpm/conf.d/40-custom.ini
+RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php5/fpm/conf.d/40-custom.ini
+# RUN echo "xdebug.remote_host=10.1.3.38" >> /etc/php5/fpm/conf.d/40-custom.ini
 
 # fix ownership of sock file for php-fpm
 RUN sed -i -e "s/;listen.mode = 0660/listen.mode = 0750/g" /etc/php5/fpm/pool.d/www.conf && \
