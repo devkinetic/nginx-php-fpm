@@ -42,11 +42,10 @@ procs=$(cat /proc/cpuinfo |grep processor | wc -l)
 sed -i -e "s/worker_processes 5/worker_processes $procs/" /etc/nginx/nginx.conf
 
 # Tweak nginx to allow sane file uploads
-sed -i -e "s/client_body_buffer_size.[^;]*/client_body_buffer_size 10M/" /etc/nginx/nginx.conf
-sed -i -e "s/client_max_body_size.[^;]*/client_max_body_size 10M/" /etc/nginx/nginx.conf
+sed -i -e "s/client_max_body_size.*/client_max_body_size 20M;\nclient_body_buffer_size 10M;/" /etc/nginx/nginx.conf
 
 # Allow enviroment variables to PHP
-RUN sed -i -e "s/^;clear_env = no$/clear_env = no/" /etc/php5/fpm/pool.d/www.conf
+sed -i -e "s/group = www-data/group = www-data\nclear_env = no/" /etc/php5/fpm/pool.d/www.conf
 
 # Again set the right permissions (needed when mounting from a volume)
 chown -Rf www-data.www-data /usr/share/nginx/html/
